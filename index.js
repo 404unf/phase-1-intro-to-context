@@ -1,42 +1,47 @@
 // Your code here
 
 function createEmployeeRecord([firstName,familyName,title,payRate]) {
-    return {'firstName':firstName,'familyName':familyName,'title':title,'payPerHour':payRate,'timeInEvents':[],'timeOutEvents':[]}
+    return {firstName:firstName,familyName:familyName,title:title,payPerHour:payRate,timeInEvents:[],timeOutEvents:[]}
 }
 
 function createEmployeeRecords(arrayOfArrays) {
-    let returnObjects = arrayOfArrays.forEach(array => createEmployeeRecord(array));
+    let returnObjects = []
+    arrayOfArrays.forEach(array => returnObjects.push(createEmployeeRecord(array)))
     return returnObjects
 }
 
 function createTimeInEvent(object,timestamp) {
     const dateTime = timestamp.split(' ')
-    const hour = dateTime[1]
+    const hour = parseInt(dateTime[1])
     const date = dateTime[0]
-    object['timeInEvents'] = {'type':'TimeIn','hour':hour,'date':date}
+    object.timeInEvents.push({type:'TimeIn',hour:hour,date:date})
+    return object
 }
 
 function createTimeOutEvent(object,timestamp) {
     const dateTime = timestamp.split(' ')
-    const hour = dateTime[1]
+    const hour = parseInt(dateTime[1])
     const date = dateTime[0]
-    object['timeInEvents'] = { 'type': 'TimeOut', 'hour': hour, 'date': date } 
+    object.timeOutEvents.push({ type: 'TimeOut', hour: hour, date: date })
+    return object
 }
 
 function hoursWorkedOnDate(object,date) {
-    const listTimeIn = object['timeInEvents']
-    const listTimeOut = object['timeOutEvents']
-    const timeIn = listTimeIn.forEach(timeEvent=>{if(timeEvent['date'] === date){return timeEvent['hour']}})
-    const timeOut = listTimeOut.forEach(timeEvent=>{if(timeEvent['date'] === date){return timeEvent['hour']}})
+    const listTimeIn = object.timeInEvents
+    const listTimeOut = object.timeOutEvents
+    const timeIn = []
+    listTimeIn.forEach(timeEvent=>{if(timeEvent['date'] === date){timeIn.push(timeEvent['hour'])}})
+    const timeOut = []
+    listTimeOut.forEach(timeEvent=>{if(timeEvent['date'] === date){timeOut.push(timeEvent['hour'])}})
 
     const hours = timeOut - timeIn
 
-    return hours
+    return hours/100
 }
 
 function wagesEarnedOnDate(object,date) {
     const hours = hoursWorkedOnDate(object,date)
-    const payRate = object['payPerHour']
+    const payRate = object.payPerHour
 
     const payOwed = hours * payRate
 
@@ -46,10 +51,10 @@ function wagesEarnedOnDate(object,date) {
 
 function allWagesFor(object) {
     const datesWorked = []
-    datesWorked.push(object['timeInEvents'].forEach(timeEvent=>timeEvent['date']))
+    object.timeInEvents.forEach(timeEvent=>datesWorked.push(timeEvent['date']))
 
     let allWages = 0
-    allWages += datesWorked.forEach(date=>wagesEarnedOnDate(object,date))
+    datesWorked.forEach(date=>allWages += wagesEarnedOnDate(object,date))
     
     return allWages
 }
@@ -58,7 +63,7 @@ function allWagesFor(object) {
 function calculatePayroll(arrayOfRecords) {
     let sumOfAllPayOwed = 0
 
-    sumOfAllPayOwed += arrayOfRecords.forEach(record => allWagesFor(record))
+    arrayOfRecords.forEach(record => sumOfAllPayOwed += allWagesFor(record))
 
     return sumOfAllPayOwed
 }
